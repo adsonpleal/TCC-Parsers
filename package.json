@@ -1,0 +1,23 @@
+{
+  "name": "parsers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "download-pdf": "^0.1.6",
+    "firebase-admin": "^7.3.0",
+    "jsdom": "^15.0.0",
+    "moment": "^2.24.0",
+    "pdf-parse": "^1.1.1",
+    "pdf-table-extractor": "^1.0.3",
+    "pdf2table": "0.0.2",
+    "pdfreader": "^1.0.3",
+    "save": "^2.3.3",
+    "tabula-js": "^1.0.1"
+  }
+}
