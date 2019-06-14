@@ -50,7 +50,7 @@ async function parsePdf(pdfPath, area, destFile) {
     } else {
         destPath = pdfPath.replace('.pdf', '.json')
     }
-    const command = `java -jar tabula-1.0.2-jar-with-dependencies.jar -a ${area} -p all -f JSON  -o ${destPath} ${pdfPath}`
+    const command = `java -Dfile.encoding=UTF8 -jar tabula-1.0.2-jar-with-dependencies.jar -a ${area} -p all -f JSON  -o ${destPath} ${pdfPath}`
     return new Promise((resolve, reject) => {
         exec(command, (error, stdout, stderr) => {
             if (error) reject(stderr)
@@ -87,6 +87,7 @@ async function parseArarangua() {
         const dataColumns = Array(dataRows[0].length).fill().map((_, i) => dataRows.map((r) => r[i]))
         return dataColumns.slice(1).map((column) => {
             const dayIndex = column.findIndex((el) => /\d{2}-\d{2}-\d{2}/.test(el))
+            if (dayIndex == -1) return null
             const date = moment(column[dayIndex], 'DD-MM-YY').toDate()
             const offset = column.slice(dayIndex + 1).findIndex((el) => el == '') + dayIndex + 2
             var plates = column.slice(offset)
@@ -106,7 +107,7 @@ async function parseArarangua() {
                 plates
             }
         })
-    })
+    }).filter((e) => e)
     await saveMenu({ menu }, 'ararangua', 'Campus Araranguá')
 }
 
@@ -118,7 +119,9 @@ async function parseCCA() {
     const titlePages = require(parsedTitlePath)
 
     const endDates = titlePages.flatMap(({ data }) => {
-        const [endDay, endMonth, endYear] = data[0][0].text.match(/Cardápio de \d{2} de .+ a (\d{2}) de (.+) de (\d{4})/).slice(1)
+        const match = data[0][0].text.match(/Cardápio de \d{2} de .+ a (\d{2}) de (.+) de (\d{4})/)
+        if (!match) return []
+        const [endDay, endMonth, endYear] = match.slice(1)
         return new Date(parseInt(endYear), monthMapping[endMonth], parseInt(endDay))
     })
 
@@ -162,10 +165,14 @@ async function parseCuritibanos() {
     const [menu, menuDinner] = pages.map(({ data }) => {
         const dataRows = data.map(d => d.map(({ text }) => text.replace(/\r/g, ' ')))
         const dataColumns = Array(dataRows[0].length).fill().map((_, i) => dataRows.map((r) => r[i]))
-        return dataColumns.map((column) => ({
-            date: moment(column[0].match(/(\d{2})\/(\d{2})/g), 'DD/MM').toDate(),
-            plates: column.slice(1)
-        }))
+        return dataColumns.map((column) => {
+            const match = column[0].match(/(\d{2})\/(\d{2})/g)
+            if (!match) return null
+            return ({
+                date: moment(match, 'DD/MM').toDate(),
+                plates: column.slice(1)
+            });
+        }).filter(e => e)
     })
     await saveMenu({ menu, menuDinner }, 'curitibanos', 'Campus Curitibanos')
 }
@@ -180,19 +187,32 @@ async function parseJoinvile() {
         const dataRows = data.map(d => d.map(({ text }) => text))
         const dataColumns = Array(dataRows[0].length).fill().map((_, i) => dataRows.map((r) => r[i]))
         return dataColumns.slice(1).map((column) => {
-            const date = moment(column[1].match(/\d{2}\/\d{2}\/\d{4}/g), 'DD/MM/YYYY').toDate()
+            const match = column[1].match(/\d{2}\/\d{2}\/\d{4}/g)
+            if (!match) return null
+            const date = moment(match, 'DD/MM/YYYY').toDate()
             const plates = column.slice(2).filter((p) => p != '')
             return {
                 date,
                 plates
             }
         })
-    }).filter((m) => m.plates.length > 0)
+    }).filter((m) => m && m.plates.length > 0)
     await saveMenu({ menu }, 'joinvile', 'Campus Joinvile')
 }
 
-parseRUTrindade()
-parseArarangua()
-parseCCA()
-parseCuritibanos()
-parseJoinvile()
+async function runAll() {
+    try {
+        await Promise.all([
+            parseRUTrindade(),
+            parseArarangua(),
+            parseCCA(),
+            parseCuritibanos(),
+            parseJoinvile()
+        ])
+    } catch (e) {
+        console.error(e)
+    }
+    console.log('Done!')
+}
+
+runAll()
