@@ -1,18 +1,19 @@
-const jsdom = require("jsdom");
-const { JSDOM } = jsdom;
+const jsdom = require("jsdom")
+const path = require("path")
+const { JSDOM } = jsdom
 const download = require('download-pdf')
 const moment = require('moment')
-const { exec } = require('child_process');
+const { exec } = require('child_process')
 
-const admin = require('firebase-admin');
+const admin = require('firebase-admin')
 
-const serviceAccount = require('./serviceAccountKey.json');
+const serviceAccount = require('./serviceAccountKey.json')
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
-});
+})
 
-const db = admin.firestore();
+const db = admin.firestore()
 
 const monthMapping = {
     'janeiro': 0,
@@ -50,13 +51,13 @@ async function parsePdf(pdfPath, area, destFile) {
     } else {
         destPath = pdfPath.replace('.pdf', '.json')
     }
-    const command = `java -Dfile.encoding=UTF8 -jar ./tabula-1.0.2-jar-with-dependencies.jar -a ${area} -p all -f JSON  -o ${destPath} ${pdfPath}`
+    const command = `java -Dfile.encoding=UTF8 -jar ${path.resolve('./tabula-1.0.2-jar-with-dependencies.jar')} -a ${area} -p all -f JSON  -o ${destPath} ${pdfPath}`
     return new Promise((resolve, reject) => {
         exec(command, (error, stdout, stderr) => {
             if (error) reject(stderr)
             else resolve(destPath)
-        });
-    });
+        })
+    })
 }
 
 async function saveMenu(data, documentID, name) {
@@ -70,7 +71,7 @@ async function saveMenu(data, documentID, name) {
 async function parseRUTrindade() {
     const { document } = (await JSDOM.fromURL("http://ru.ufsc.br/ru/")).window
     const rows = Array.from(document.querySelector('table').querySelectorAll('tr'))
-    const getCellContent = (tr) => Array.from(tr.querySelectorAll('td')).flatMap((td) => td.innerHTML.replace(/<p><\/p>/, '\n').replace(/(<\/?p>)|(<\/?strong>)/g, '').replace(/&nbsp;/, ' ').split('\n'))
+    const getCellContent = (tr) => Array.from(tr.querySelectorAll('td')).flatMap((td) => td.innerHTML.replace(/<p><\/p>/, '\n').replace(/(<\/?p>)|(<\/?strong>)/g, '').replace(/&nbsp/, ' ').split('\n'))
     const contentToDayAndPlates = ([date, ...plates]) => ({ date: moment(date, 'DD/MM').toDate(), plates: plates.flatMap(i => i.split('/').map(p => p.trim())).filter(i => i !== '') })
     const menu = rows.map(getCellContent).map((c) => contentToDayAndPlates(c.slice(2)))
     await saveMenu({ menu }, 'trindade', 'Campus Trindade')
@@ -171,7 +172,7 @@ async function parseCuritibanos() {
             return ({
                 date: moment(match, 'DD/MM').toDate(),
                 plates: column.slice(1)
-            });
+            })
         }).filter(e => e)
     })
     await saveMenu({ menu, menuDinner }, 'curitibanos', 'Campus Curitibanos')
