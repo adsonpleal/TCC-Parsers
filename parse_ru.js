@@ -50,7 +50,7 @@ async function parsePdf(pdfPath, area, destFile) {
     } else {
         destPath = pdfPath.replace('.pdf', '.json')
     }
-    const command = `java -Dfile.encoding=UTF8 -jar tabula-1.0.2-jar-with-dependencies.jar -a ${area} -p all -f JSON  -o ${destPath} ${pdfPath}`
+    const command = `java -Dfile.encoding=UTF8 -jar ./tabula-1.0.2-jar-with-dependencies.jar -a ${area} -p all -f JSON  -o ${destPath} ${pdfPath}`
     return new Promise((resolve, reject) => {
         exec(command, (error, stdout, stderr) => {
             if (error) reject(stderr)
