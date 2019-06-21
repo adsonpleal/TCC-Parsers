@@ -203,13 +203,11 @@ async function parseJoinvile() {
 
 async function runAll() {
     try {
-        await Promise.all([
-            parseRUTrindade(),
-            parseArarangua(),
-            parseCCA(),
-            parseCuritibanos(),
-            parseJoinvile()
-        ])
+        await parseRUTrindade()
+        await parseArarangua()
+        await parseCCA()
+        await parseCuritibanos()
+        await parseJoinvile()
     } catch (e) {
         console.error(e)
     }
