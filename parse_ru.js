@@ -204,14 +204,19 @@ async function parseJoinvile() {
 async function runAll() {
     try {
         await parseRUTrindade()
+        console.log('done parseRUTrindade!')
         await parseArarangua()
+        console.log('done parseArarangua!')
         await parseCCA()
+        console.log('done parseCCA!')
         await parseCuritibanos()
+        console.log('done parseCuritibanos!')
         await parseJoinvile()
+        console.log('done parseJoinvile!')
     } catch (e) {
         console.error(e)
     }
-    console.log('Done!')
+    console.log('Finished!')
 }
 
 runAll()
