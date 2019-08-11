@@ -4,6 +4,7 @@ const { JSDOM } = jsdom
 const download = require('download-pdf')
 const moment = require('moment')
 const { exec } = require('child_process')
+const CronJob = require('cron').CronJob;
 
 const admin = require('firebase-admin')
 
@@ -223,4 +224,6 @@ async function runAll() {
     console.log('Finished!')
 }
 
-runAll()
+new CronJob('0 * * * *', runAll).start();
+
+// runAll()
