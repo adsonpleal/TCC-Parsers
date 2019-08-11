@@ -70,10 +70,14 @@ async function saveMenu(data, documentID, name) {
 
 async function parseRUTrindade() {
     const { document } = (await JSDOM.fromURL("http://ru.ufsc.br/ru/")).window
-    const rows = Array.from(document.querySelector('table').querySelectorAll('tr'))
-    const getCellContent = (tr) => Array.from(tr.querySelectorAll('td')).flatMap((td) => td.innerHTML.replace(/<p><\/p>/, '\n').replace(/(<\/?p>)|(<\/?strong>)/g, '').replace(/&nbsp/, ' ').split('\n'))
-    const contentToDayAndPlates = ([date, ...plates]) => ({ date: moment(date, 'DD/MM').toDate(), plates: plates.flatMap(i => i.split('/').map(p => p.trim())).filter(i => i !== '') })
-    const menu = rows.map(getCellContent).map((c) => contentToDayAndPlates(c.slice(2)))
+    const rows = Array.from(document.querySelector('table').querySelectorAll('tr')).slice(1)
+    const getCellContent = (tr) => Array.from(tr.querySelectorAll('td'))
+        .flatMap((td) => td.textContent)
+    const contentToDayAndPlates = ([date, ...plates]) => ({
+        date: moment(date.split(' ')[0], 'DD.MM.yyyy').toDate(),
+        plates: plates.flatMap(i => i.split(/(\n|\s\s)/g)).map(i => i.trim()).filter(i => i !== '')
+    })
+    const menu = rows.map(getCellContent).map(contentToDayAndPlates)
     await saveMenu({ menu }, 'trindade', 'Campus Trindade')
 }
 
