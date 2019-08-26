@@ -75,7 +75,7 @@ async function parseRUTrindade() {
     const getCellContent = (tr) => Array.from(tr.querySelectorAll('td'))
         .flatMap((td) => td.textContent)
     const contentToDayAndPlates = ([date, ...plates]) => ({
-        date: moment(date.split(' ')[0], 'DD.MM.yyyy').toDate(),
+        date: moment(date.split(' ')[0], 'DD.MM.yyyy').add(3, 'hours').toDate(),
         plates: plates.flatMap(i => i.split(/(\n|\s\s)/g)).map(i => i.trim()).filter(i => i !== '')
     })
     const menu = rows.map(getCellContent).map(contentToDayAndPlates)
@@ -94,7 +94,7 @@ async function parseArarangua() {
         return dataColumns.slice(1).map((column) => {
             const dayIndex = column.findIndex((el) => /\d{2}-\d{2}-\d{2}/.test(el))
             if (dayIndex == -1) return null
-            const date = moment(column[dayIndex], 'DD-MM-YY').toDate()
+            const date = moment(column[dayIndex], 'DD-MM-YY').add(3, 'hours').toDate()
             const offset = column.slice(dayIndex + 1).findIndex((el) => el == '') + dayIndex + 2
             var plates = column.slice(offset)
             plates.forEach((ingredient, index) => {
@@ -139,7 +139,7 @@ async function parseCCA() {
         const dataColumns = Array(dataRows[0].length).fill().map((_, i) => dataRows.map((r) => r[i]))
         const dayFactor = dataColumns.length - 1
         return dataColumns.map((column, index) => {
-            const date = moment(endDate).add('days', - (dayFactor - index)).toDate()
+            const date = moment(endDate).add('days', - (dayFactor - index)).add(3, 'hours').toDate()
             const offset = column.findIndex((el) => el == '') + 1
             var plates = column.slice(offset).filter(i => !/Saladas|Acompanhamentos|Carnes|Sobremesa/.test(i))
             plates.forEach((ingredient, index) => {
@@ -175,7 +175,7 @@ async function parseCuritibanos() {
             const match = column[0].match(/(\d{2})\/(\d{2})/g)
             if (!match) return null
             return ({
-                date: moment(match, 'DD/MM').toDate(),
+                date: moment(match, 'DD/MM').add(3, 'hours').toDate(),
                 plates: column.slice(1)
             })
         }).filter(e => e)
@@ -195,7 +195,7 @@ async function parseJoinvile() {
         return dataColumns.slice(1).map((column) => {
             const match = column[1].match(/\d{2}\/\d{2}\/\d{4}/g)
             if (!match) return null
-            const date = moment(match, 'DD/MM/YYYY').toDate()
+            const date = moment(match, 'DD/MM/YYYY').add(3, 'hours').toDate()
             const plates = column.slice(2).filter((p) => p != '')
             return {
                 date,
